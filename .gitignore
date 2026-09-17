@@ -1,0 +1,20 @@
+# Android Studio e Gradle
+.gradle/
+.idea/
+.kotlin/
+*.iml
+local.properties
+
+# Artefatos de build
+build/
+app/build/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Memória local do Codex
+.codex/
