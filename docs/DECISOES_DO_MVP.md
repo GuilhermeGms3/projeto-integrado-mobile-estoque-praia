@@ -15,6 +15,8 @@ O saldo é controlado por variação, e não somente por modelo. Uma variação 
 - a quantidade não pode ser zero ou negativa;
 - uma saída que produziria saldo negativo é recusada;
 - o alerta de estoque baixo é exibido quando a quantidade é menor ou igual ao mínimo da variação.
+- o cadastro local exige dados da variação, preço, estoque inicial e estoque mínimo;
+- o SKU não pode se repetir.
 
 ## Próximo encaixe técnico
 

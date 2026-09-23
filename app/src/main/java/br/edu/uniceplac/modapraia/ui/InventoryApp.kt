@@ -27,7 +27,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -57,6 +57,8 @@ import br.edu.uniceplac.modapraia.domain.LoginRequest
 import br.edu.uniceplac.modapraia.domain.MovementType
 import br.edu.uniceplac.modapraia.domain.ProductVariant
 import br.edu.uniceplac.modapraia.domain.RegistrationRequest
+import java.text.NumberFormat
+import java.util.Locale
 
 @Composable
 fun InventoryApp(viewModel: InventoryViewModel = viewModel(factory = InventoryViewModel.factory())) {
@@ -84,6 +86,7 @@ fun InventoryApp(viewModel: InventoryViewModel = viewModel(factory = InventoryVi
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     var selectedProduct by remember { mutableStateOf<ProductVariant?>(null) }
+    var showProductRegistration by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.message) {
         state.message?.let {
@@ -96,9 +99,11 @@ fun InventoryApp(viewModel: InventoryViewModel = viewModel(factory = InventoryVi
         topBar = { AppBar() },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
-            FloatingActionButton(onClick = { selectedProduct = state.products.firstOrNull() }) {
-                Icon(Icons.Default.Add, contentDescription = "Registrar movimentação")
-            }
+            ExtendedFloatingActionButton(
+                onClick = { showProductRegistration = true },
+                icon = { Icon(Icons.Default.Add, contentDescription = null) },
+                text = { Text("Cadastrar produto") }
+            )
         }
     ) { padding ->
         InventoryScreen(
@@ -116,6 +121,12 @@ fun InventoryApp(viewModel: InventoryViewModel = viewModel(factory = InventoryVi
                 viewModel.registerMovement(product.id, type, quantity, note)
                 selectedProduct = null
             }
+        )
+    }
+    if (showProductRegistration) {
+        ProductRegistrationDialog(
+            onDismiss = { showProductRegistration = false },
+            onSave = viewModel::addProduct
         )
     }
 }
@@ -224,9 +235,10 @@ private fun InventoryScreen(
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(12.dp),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp)
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 96.dp)
     ) {
         item { Dashboard(state) }
+        item { Text("Toque em um produto para registrar entrada ou saída.", style = MaterialTheme.typography.bodySmall) }
         item {
             OutlinedTextField(
                 value = state.search,
@@ -290,6 +302,7 @@ private fun ProductCard(product: ProductVariant, onClick: () -> Unit) {
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Text(product.productName, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text("${product.category} · ${NumberFormat.getCurrencyInstance(Locale("pt", "BR")).format(product.salePrice)}", style = MaterialTheme.typography.bodySmall)
                 Text("${product.size} · ${product.color} · ${product.sku}", style = MaterialTheme.typography.bodySmall)
             }
             Column(horizontalAlignment = Alignment.End) {

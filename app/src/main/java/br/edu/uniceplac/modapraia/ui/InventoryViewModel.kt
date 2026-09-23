@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import br.edu.uniceplac.modapraia.data.InMemoryInventoryRepository
 import br.edu.uniceplac.modapraia.data.InventoryRepository
 import br.edu.uniceplac.modapraia.domain.MovementType
+import br.edu.uniceplac.modapraia.domain.NewProduct
 import br.edu.uniceplac.modapraia.domain.ProductVariant
 import br.edu.uniceplac.modapraia.domain.StockMovement
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,6 +40,43 @@ class InventoryViewModel(private val repository: InventoryRepository) : ViewMode
 
     fun updateSearch(value: String) { search.value = value }
     fun clearMessage() { message.value = null }
+
+    fun addProduct(
+        productName: String,
+        category: String,
+        size: String,
+        color: String,
+        sku: String,
+        priceText: String,
+        initialQuantityText: String,
+        minimumQuantityText: String
+    ): String? {
+        val price = priceText.replace(',', '.').toDoubleOrNull()
+            ?: return "Informe um preço válido."
+        val initialQuantity = initialQuantityText.toIntOrNull()
+            ?: return "Informe o estoque inicial."
+        val minimumQuantity = minimumQuantityText.toIntOrNull()
+            ?: return "Informe o estoque mínimo."
+
+        return repository.addProduct(
+            NewProduct(
+                productName = productName,
+                category = category,
+                size = size,
+                color = color,
+                sku = sku,
+                salePrice = price,
+                initialQuantity = initialQuantity,
+                minimumQuantity = minimumQuantity
+            )
+        ).fold(
+            onSuccess = {
+                message.value = "Produto cadastrado com sucesso."
+                null
+            },
+            onFailure = { it.message ?: "Não foi possível cadastrar o produto." }
+        )
+    }
 
     fun registerMovement(variantId: String, type: MovementType, quantityText: String, note: String) {
         val quantity = quantityText.toIntOrNull()

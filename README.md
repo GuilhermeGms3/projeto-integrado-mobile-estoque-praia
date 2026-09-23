@@ -7,6 +7,7 @@ Primeira entrega do aplicativo Android nativo do projeto de Moda Praia da UNICEP
 - painel com totais e alertas de estoque baixo;
 - busca por produto, categoria, cor, tamanho ou SKU;
 - visualização de saldo por variação;
+- cadastro local de produto com categoria, tamanho, cor, SKU, preço, estoque inicial e estoque mínimo;
 - registro de entrada e saída por venda;
 - regra que impede saldo negativo;
 - histórico recente de movimentações.

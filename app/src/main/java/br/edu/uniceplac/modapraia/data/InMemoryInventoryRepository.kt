@@ -1,6 +1,7 @@
 package br.edu.uniceplac.modapraia.data
 
 import br.edu.uniceplac.modapraia.domain.MovementType
+import br.edu.uniceplac.modapraia.domain.NewProduct
 import br.edu.uniceplac.modapraia.domain.ProductVariant
 import br.edu.uniceplac.modapraia.domain.StockMovement
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,6 +31,55 @@ class InMemoryInventoryRepository : InventoryRepository {
 
     override val products: StateFlow<List<ProductVariant>> = _products.asStateFlow()
     override val movements: StateFlow<List<StockMovement>> = _movements.asStateFlow()
+
+    override fun addProduct(product: NewProduct): Result<Unit> {
+        val productName = product.productName.trim()
+        val category = product.category.trim()
+        val size = product.size.trim()
+        val color = product.color.trim()
+        val sku = product.sku.trim().uppercase()
+
+        if (listOf(productName, category, size, color, sku).any(String::isBlank)) {
+            return Result.failure(IllegalArgumentException("Preencha todos os dados do produto."))
+        }
+        if (product.salePrice <= 0) {
+            return Result.failure(IllegalArgumentException("Informe um preço maior que zero."))
+        }
+        if (product.initialQuantity < 0 || product.minimumQuantity < 0) {
+            return Result.failure(IllegalArgumentException("As quantidades não podem ser negativas."))
+        }
+        if (_products.value.any { it.sku.equals(sku, ignoreCase = true) }) {
+            return Result.failure(IllegalArgumentException("Já existe um produto com este SKU."))
+        }
+
+        val variant = ProductVariant(
+            id = UUID.randomUUID().toString(),
+            productName = productName,
+            category = category,
+            size = size,
+            color = color,
+            sku = sku,
+            quantity = product.initialQuantity,
+            minimumQuantity = product.minimumQuantity,
+            salePrice = product.salePrice
+        )
+        _products.value = listOf(variant) + _products.value
+
+        if (product.initialQuantity > 0) {
+            _movements.value = listOf(
+                StockMovement(
+                    id = UUID.randomUUID().toString(),
+                    variantId = variant.id,
+                    productLabel = "${variant.productName} · ${variant.size} · ${variant.color}",
+                    type = MovementType.ENTRY,
+                    quantity = product.initialQuantity,
+                    occurredAt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM HH:mm")),
+                    note = "Estoque inicial"
+                )
+            ) + _movements.value
+        }
+        return Result.success(Unit)
+    }
 
     override fun registerMovement(variantId: String, type: MovementType, quantity: Int, note: String): Result<Unit> {
         if (quantity <= 0) return Result.failure(IllegalArgumentException("Informe uma quantidade maior que zero."))

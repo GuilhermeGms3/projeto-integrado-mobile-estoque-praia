@@ -20,6 +20,17 @@ data class ProductVariant(
     val isLowStock: Boolean get() = quantity <= minimumQuantity
 }
 
+data class NewProduct(
+    val productName: String,
+    val category: String,
+    val size: String,
+    val color: String,
+    val sku: String,
+    val salePrice: Double,
+    val initialQuantity: Int,
+    val minimumQuantity: Int
+)
+
 data class StockMovement(
     val id: String,
     val variantId: String,
