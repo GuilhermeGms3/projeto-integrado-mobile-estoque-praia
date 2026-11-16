@@ -52,7 +52,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import br.edu.uniceplac.modapraia.data.InMemoryAuthRepository
+import br.edu.uniceplac.modapraia.data.LocalAuthRepository
+import br.edu.uniceplac.modapraia.data.LocalInventoryRepository
+import androidx.compose.ui.platform.LocalContext
 import br.edu.uniceplac.modapraia.domain.LoginRequest
 import br.edu.uniceplac.modapraia.domain.MovementType
 import br.edu.uniceplac.modapraia.domain.ProductVariant
@@ -61,10 +63,13 @@ import java.text.NumberFormat
 import java.util.Locale
 
 @Composable
-fun InventoryApp(viewModel: InventoryViewModel = viewModel(factory = InventoryViewModel.factory())) {
+fun InventoryApp() {
+    val context = LocalContext.current.applicationContext
+    val repository = remember { LocalInventoryRepository(context) }
+    val viewModel: InventoryViewModel = viewModel(factory = InventoryViewModel.factory(repository))
     var authenticated by remember { mutableStateOf(false) }
     var registrationMode by remember { mutableStateOf(false) }
-    val authRepository = remember { InMemoryAuthRepository() }
+    val authRepository = remember { LocalAuthRepository(context) }
 
     if (!authenticated) {
         AuthenticationScreen(
@@ -162,7 +167,7 @@ private fun AuthenticationScreen(
             }
         } else {
             if (!onLogin(email, password)) {
-                message = "Credenciais não reconhecidas. Use a conta de demonstração ou crie uma conta."
+                message = "Credenciais não reconhecidas. Confira os dados ou crie uma conta neste aparelho."
             }
         }
     }
@@ -207,7 +212,7 @@ private fun AuthenticationScreen(
             Text(if (registrationMode) "Já possui conta? Entrar" else "Não possui conta? Criar conta")
         }
         if (!registrationMode) {
-            Text("Demonstração: gestora@estoquepraia.com / 12345678", style = MaterialTheme.typography.labelSmall, modifier = Modifier.align(Alignment.CenterHorizontally))
+            Text("Crie sua conta neste aparelho para começar.", style = MaterialTheme.typography.labelSmall, modifier = Modifier.align(Alignment.CenterHorizontally))
         }
     }
 }

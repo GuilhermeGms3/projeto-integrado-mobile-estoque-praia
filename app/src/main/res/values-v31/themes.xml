@@ -1,0 +1,6 @@
+<resources>
+    <style name="Theme.EstoquePraia" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowSplashScreenBackground">#0F6B57</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_praia</item>
+    </style>
+</resources>

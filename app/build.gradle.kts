@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -12,11 +14,32 @@ android {
         applicationId = "br.edu.uniceplac.modapraia"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "1.0.0"
     }
 
     buildFeatures { compose = true }
+
+    signingConfigs {
+        create("production") {
+            val signingFile = rootProject.file("signing.properties")
+            if (signingFile.exists()) {
+                val values = Properties().apply { signingFile.inputStream().use { load(it) } }
+                storeFile = file(values.getProperty("storeFile"))
+                storePassword = values.getProperty("storePassword")
+                keyAlias = values.getProperty("keyAlias")
+                keyPassword = values.getProperty("keyPassword")
+            }
+        }
+    }
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            signingConfig = signingConfigs.getByName("production")
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
+        }
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

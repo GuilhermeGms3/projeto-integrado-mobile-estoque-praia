@@ -18,3 +18,8 @@ Thumbs.db
 
 # Memória local do Codex
 .codex/
+
+# Chaves privadas de distribuição
+signing.properties
+*.keystore
+*.jks
