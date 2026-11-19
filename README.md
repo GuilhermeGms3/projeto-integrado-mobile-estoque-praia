@@ -19,6 +19,10 @@ Aplicativo Android nativo desenvolvido para apoiar o controle de estoque de uma 
 
 ## O que já está implementado
 
+A versão 1.1.0 acrescenta detalhes e edição de produtos, histórico de vendas, caixa, contas a pagar/receber com baixas parciais e encomendas. Vendas, estoque e recebíveis são integrados por transações SQLite. Consulte [`docs/GESTAO_LOJA.md`](docs/GESTAO_LOJA.md) para os fluxos e limites.
+
+A versão 1.2.0 inclui gráficos nas contas e no financeiro, formulário completo de encomenda e carga explícita de dados fictícios pelo botão Demo. Os gráficos usam os registros do banco e são atualizados ao pagar/receber. A demonstração é identificada na interface e não substitui registros existentes.
+
 - painel com totais e alertas de estoque baixo;
 - busca por produto, categoria, cor, tamanho ou SKU;
 - visualização de saldo por variação;
@@ -27,9 +31,9 @@ Aplicativo Android nativo desenvolvido para apoiar o controle de estoque de uma 
 - regra que impede saldo negativo;
 - histórico recente de movimentações.
 
-Também há um protótipo funcional local de Login e Cadastro: valida nome completo, e-mail, senha e confirmação, permite criar uma conta apenas durante a sessão e libera o painel de estoque. Para testar diretamente, use `gestora@estoquepraia.com` e `12345678`.
+O Login e Cadastro usam contas persistidas no aparelho, com senhas derivadas por PBKDF2. Crie uma conta no primeiro acesso. A conta de demonstração das versões anteriores não faz parte da release 1.0.0.
 
-Os registros atuais são dados de demonstração mantidos em memória apenas para validar o fluxo de interface. Eles são reiniciados quando o aplicativo fecha. As interfaces `InventoryRepository` e `AuthRepository` separam a tela das fontes de dados: a próxima etapa é substituir as implementações em memória pela API REST em Kotlin/Spring Boot e PostgreSQL prevista no trabalho escrito.
+Produtos e movimentações são persistidos em SQLite no armazenamento privado do aparelho. O estoque inicia vazio. As interfaces `InventoryRepository` e `AuthRepository` separam a tela das fontes de dados. Esta versão funciona localmente, sem sincronização, e todas as contas do aparelho acessam o mesmo estoque. A integração REST permanece uma evolução futura; consulte `docs/RELEASE_MVP.md`.
 
 ## Como abrir
 

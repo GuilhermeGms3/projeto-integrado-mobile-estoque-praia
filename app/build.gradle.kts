@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -12,11 +14,36 @@ android {
         applicationId = "br.edu.uniceplac.modapraia"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 5
+        versionName = "1.2.1"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildFeatures { compose = true }
+
+    signingConfigs {
+        create("production") {
+            val signingFile = rootProject.file("signing.properties")
+            if (signingFile.exists()) {
+                val values = Properties().apply { signingFile.inputStream().use { load(it) } }
+                storeFile = file(values.getProperty("storeFile"))
+                storePassword = values.getProperty("storePassword")
+                keyAlias = values.getProperty("keyAlias")
+                keyPassword = values.getProperty("keyPassword")
+            }
+        }
+    }
+    buildTypes {
+        debug {
+            if (rootProject.file("signing.properties").exists()) signingConfig = signingConfigs.getByName("production")
+        }
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            signingConfig = signingConfigs.getByName("production")
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
+        }
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -26,6 +53,8 @@ android {
 }
 
 dependencies {
+    androidTestImplementation("androidx.test:runner:1.6.2")
+    androidTestImplementation("junit:junit:4.13.2")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
