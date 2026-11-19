@@ -1,5 +1,9 @@
 # Gestão local da loja — versão 1.1.0
 
+## Acesso persistente — versão 1.2.1
+
+Após um login válido, a sessão local permanece no armazenamento privado e é restaurada ao recriar a interface ou abrir o app novamente. A sessão armazena apenas o identificador da conta e seu e-mail, conferidos com a conta existente; não armazena a senha. O botão Sair remove a sessão. Senhas continuam derivadas com PBKDF2. Como aplicação local de uso pessoal, quem abre o app em um aparelho desbloqueado acessa a sessão mantida até Sair; não há sessão remota ou sincronização.
+
 ## Apresentação — versão 1.2.0
 
 As telas de contas exibem barras proporcionais para total pago/recebido, saldo a vencer e vencido, excluindo contas canceladas. O financeiro compara recebimentos e pagamentos acumulados e apresenta o volume de movimentações dos últimos sete dias, explicitamente identificado como entradas + saídas (não saldo). Os gráficos são derivados do mesmo estado das listas e atualizam após baixas.

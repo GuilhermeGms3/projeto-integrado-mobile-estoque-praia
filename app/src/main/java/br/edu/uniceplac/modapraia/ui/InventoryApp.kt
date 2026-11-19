@@ -67,9 +67,9 @@ fun InventoryApp() {
     val context = LocalContext.current.applicationContext
     val repository = remember { LocalInventoryRepository(context) }
     val viewModel: InventoryViewModel = viewModel(factory = InventoryViewModel.factory(repository))
-    var authenticated by remember { mutableStateOf(false) }
-    var registrationMode by remember { mutableStateOf(false) }
     val authRepository = remember { LocalAuthRepository(context) }
+    var authenticated by remember { mutableStateOf(authRepository.currentUser()!=null) }
+    var registrationMode by remember { mutableStateOf(false) }
 
     if (!authenticated) {
         AuthenticationScreen(
@@ -88,7 +88,7 @@ fun InventoryApp() {
         )
         return
     }
-    StoreWorkspace(repository, viewModel, onLogout = { authenticated = false })
+    StoreWorkspace(repository, viewModel, onLogout = { if(authRepository.logout()) authenticated = false })
 }
 
 @Composable

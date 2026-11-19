@@ -14,6 +14,24 @@ class CommerceIntegrationTest {
         override fun getDatabasePath(name: String): java.io.File = super.getDatabasePath("integration-$name").also { it.parentFile?.mkdirs() }
         override fun openOrCreateDatabase(name: String, mode: Int, factory: android.database.sqlite.SQLiteDatabase.CursorFactory?): android.database.sqlite.SQLiteDatabase = android.database.sqlite.SQLiteDatabase.openOrCreateDatabase(getDatabasePath(name),factory)
         override fun deleteDatabase(name: String): Boolean = android.database.sqlite.SQLiteDatabase.deleteDatabase(getDatabasePath(name))
+        override fun getSharedPreferences(name: String, mode: Int): android.content.SharedPreferences = super.getSharedPreferences("integration-$name",mode)
+    }
+    @Test
+    fun testSessionSurvivesRepositoryRecreationAndLogout() {
+        val context=isolatedContext()
+        context.getSharedPreferences("accounts",0).edit().clear().commit()
+        context.getSharedPreferences("local_session",0).edit().clear().commit()
+        val auth=LocalAuthRepository(context)
+        assertNull(auth.currentUser())
+        auth.register(RegistrationRequest("Usuária de teste","session@example.test","Test-session-123")).getOrThrow()
+        assertTrue(auth.login(LoginRequest("session@example.test","incorrect")).isFailure)
+        assertNull(LocalAuthRepository(context).currentUser())
+        auth.login(LoginRequest("session@example.test","Test-session-123")).getOrThrow()
+        assertEquals("session@example.test",LocalAuthRepository(context).currentUser()?.email)
+        assertFalse(context.getSharedPreferences("local_session",0).all.values.contains("Test-session-123"))
+        assertTrue(LocalAuthRepository(context).logout())
+        assertNull(LocalAuthRepository(context).currentUser())
+        context.getSharedPreferences("accounts",0).edit().clear().commit()
     }
     @Test
     fun testDemoDataIsConsistentAndDoesNotDuplicate() {
