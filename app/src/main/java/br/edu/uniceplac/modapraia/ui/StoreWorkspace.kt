@@ -34,8 +34,9 @@ fun StoreWorkspace(inventory: LocalInventoryRepository, viewModel: InventoryView
     var message by remember { mutableStateOf<String?>(null) }
     var confirmation by remember { mutableStateOf<Pair<String, () -> Result<Unit>>?>(null) }
     fun result(value: Result<Unit>) { message=value.fold({"Operação concluída."},{it.message ?: "Não foi possível concluir."}) }
-    Scaffold(topBar={ TopAppBar(title={Text("Estoque Praia",fontWeight=FontWeight.Bold)}, actions={ TextButton(onClick=onLogout){Text("Sair")} }) }) { padding ->
+    Scaffold(topBar={ TopAppBar(title={Text("Estoque Praia",fontWeight=FontWeight.Bold)}, actions={ TextButton(onClick={confirmation="Adicionar dados fictícios de apresentação sem alterar seus registros? A carga é feita uma única vez." to {commerce.loadDemoData()}}){Text("Demo")}; TextButton(onClick=onLogout){Text("Sair")} }) }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
+            if(stock.products.any {it.sku.startsWith("DEMO-")}) Text("Contém dados fictícios de demonstração",style=MaterialTheme.typography.labelSmall,modifier=Modifier.padding(horizontal=16.dp),color=MaterialTheme.colorScheme.secondary)
             Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal=12.dp),horizontalArrangement=Arrangement.spacedBy(8.dp)) {
                 listOf("Estoque","Vendas","Financeiro","A pagar","A receber","Encomendas").forEach { name -> FilterChip(selected=tab==name,onClick={tab=name},label={Text(name)}) }
             }
@@ -58,6 +59,7 @@ fun StoreWorkspace(inventory: LocalInventoryRepository, viewModel: InventoryView
                         val direction=if(tab=="A pagar") "PAY" else "RECEIVE"
                         Button(onClick={form=tab}){Text("Nova conta ${tab.lowercase()}")}
                         val bills=state.bills.filter { it.direction==direction }
+                        AccountsChart(bills,direction=="PAY")
                         Text("Saldo em aberto: ${currency(bills.filterNot { it.canceled }.sumOf { it.remaining })}",fontWeight=FontWeight.Bold)
                         if(bills.isEmpty()) Text("Nenhuma conta cadastrada.")
                         bills.forEach { bill -> RecordCard(bill.description,"${bill.person}\nVencimento: ${displayDate(bill.due)} · ${bill.status}\nTotal: ${currency(bill.total)} · Baixado: ${currency(bill.paid)}\nRestante: ${currency(bill.remaining)}") {
@@ -68,6 +70,7 @@ fun StoreWorkspace(inventory: LocalInventoryRepository, viewModel: InventoryView
                     "Financeiro" -> {
                         val incoming=state.payments.filter { it.direction=="RECEIVE" }.sumOf { it.amount }
                         val outgoing=state.payments.filter { it.direction=="PAY" }.sumOf { it.amount }
+                        CashChart(state.payments)
                         RecordCard("Caixa acumulado", "Entradas recebidas: ${currency(incoming)}\nSaídas pagas: ${currency(outgoing)}\nSaldo: ${currency(incoming-outgoing)}"){}
                         Text("O caixa considera somente baixas realizadas, sem saldo inicial. Vendas e contas em aberto não são somadas novamente.",style=MaterialTheme.typography.bodySmall)
                         Text("A receber: ${currency(state.bills.filter { it.direction=="RECEIVE" && !it.canceled }.sumOf { it.remaining })}")
@@ -95,7 +98,8 @@ fun StoreWorkspace(inventory: LocalInventoryRepository, viewModel: InventoryView
     val product=stock.products.firstOrNull { it.id==detailId }
     if(form==null) product?.let { p -> ProductDetails(p,stock.movements.filter { it.variantId==p.id },{detailId=null},{form="Editar"},{form="Movimentar"},{form="Venda"}) }
     if(form=="Produto") ProductRegistrationDialog({form=null},viewModel::addProduct)
-    if(form in listOf("Venda","Encomenda")) {
+    if(form=="Encomenda") OrderForm(stock.products,commerce,{form=null})
+    if(form=="Venda") {
         val isOrder=form=="Encomenda"
         ProductOperationForm(form!!,stock.products,product, {form=null}) { chosen, values ->
             runCatching {

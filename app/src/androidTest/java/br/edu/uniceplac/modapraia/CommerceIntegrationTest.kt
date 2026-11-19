@@ -16,6 +16,39 @@ class CommerceIntegrationTest {
         override fun deleteDatabase(name: String): Boolean = android.database.sqlite.SQLiteDatabase.deleteDatabase(getDatabasePath(name))
     }
     @Test
+    fun testDemoDataIsConsistentAndDoesNotDuplicate() {
+        val context=isolatedContext()
+        context.deleteDatabase("inventory.db")
+        val inventory=LocalInventoryRepository(context)
+        inventory.addProduct(NewProduct("Produto real","Categoria","M","Verde","REAL",50.0,7,1)).getOrThrow()
+        val commerce=CommerceRepository(inventory)
+        commerce.loadDemoData().getOrThrow()
+        assertEquals(7,inventory.products.value.size)
+        assertEquals(7,inventory.products.value.first {it.sku=="REAL"}.quantity)
+        assertEquals(5,commerce.state.value.sales.size)
+        assertEquals(9,commerce.state.value.bills.size)
+        assertEquals(3,commerce.state.value.orders.size)
+        assertEquals(82920L,commerce.state.value.payments.sumOf {if(it.direction=="RECEIVE")it.amount else -it.amount})
+        assertEquals(46960L,commerce.state.value.bills.filter {it.direction=="RECEIVE"}.sumOf {it.remaining})
+        assertEquals(49000L,commerce.state.value.bills.filter {it.direction=="PAY"}.sumOf {it.remaining})
+        assertEquals(17,inventory.products.value.first {it.sku=="DEMO-1"}.quantity)
+        val movements=inventory.movements.value.size
+        commerce.loadDemoData().getOrThrow()
+        assertEquals(7,inventory.products.value.size)
+        assertEquals(5,commerce.state.value.sales.size)
+        assertEquals(movements,inventory.movements.value.size)
+        assertEquals(3,commerce.state.value.orders.size)
+    }
+
+    /** Só é executada na carga explicitamente solicitada para o aparelho de apresentação. */
+    @Test
+    fun loadRequestedPresentationData() {
+        org.junit.Assume.assumeTrue(InstrumentationRegistry.getArguments().getString("loadDemo")=="true")
+        val inventory=LocalInventoryRepository(instrumentation.targetContext)
+        CommerceRepository(inventory).loadDemoData().getOrThrow()
+        assertTrue(inventory.products.value.any {it.sku=="DEMO-1"})
+    }
+    @Test
     fun testSaleAccountsCashAndOrderTransactions() {
         val context=isolatedContext()
         context.deleteDatabase("inventory.db")

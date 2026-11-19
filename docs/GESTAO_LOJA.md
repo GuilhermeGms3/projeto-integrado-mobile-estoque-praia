@@ -1,5 +1,13 @@
 # Gestão local da loja — versão 1.1.0
 
+## Apresentação — versão 1.2.0
+
+As telas de contas exibem barras proporcionais para total pago/recebido, saldo a vencer e vencido, excluindo contas canceladas. O financeiro compara recebimentos e pagamentos acumulados e apresenta o volume de movimentações dos últimos sete dias, explicitamente identificado como entradas + saídas (não saldo). Os gráficos são derivados do mesmo estado das listas e atualizam após baixas.
+
+O formulário de encomenda é uma tela própria, com nome, contato, seleção de produto/variação, quantidade, total combinado, prazo DD/MM/AAAA e observações. Total em branco usa preço cadastrado × quantidade. Validação de data é estrita e erros mantêm o formulário aberto.
+
+O botão Demo adiciona seis produtos, cinco vendas, quatro contas a pagar e três encomendas fictícias, com pagamentos parciais e totais e vencimentos relativos ao dia da carga. A gravação é atômica, não altera registros existentes e é idempotente pelo identificador da carga. Produtos demo são identificados por SKU DEMO-* e há aviso na interface. Clientes e contatos são fictícios. A carga é explícita, nunca automática para uma instalação nova. As contas locais do mesmo aparelho compartilham os dados, conforme o modelo atual.
+
 ## Fluxos
 
 - Estoque: cadastro, pesquisa e detalhes por variação. Os detalhes permitem editar dados/preço/mínimo, registrar reposição e consultar todo o histórico do produto. O SKU permanece estável.

@@ -38,6 +38,9 @@ class CommerceRepository(private val inventory: LocalInventoryRepository) {
     private fun now() = LocalDateTime.now().toString()
 
     @Synchronized
+    fun loadDemoData(): Result<Unit> = change { DemoData.insert(db) }
+
+    @Synchronized
     fun sell(productId: String, customer: String, quantity: Int, total: Long, due: String, paid: Boolean): Result<Unit> = change {
         val saleId = insertSale(productId, customer, quantity, total, due)
         if (paid) {
