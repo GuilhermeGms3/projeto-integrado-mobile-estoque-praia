@@ -14,8 +14,9 @@ android {
         applicationId = "br.edu.uniceplac.modapraia"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.0.0"
+        versionCode = 3
+        versionName = "1.1.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildFeatures { compose = true }
@@ -33,6 +34,9 @@ android {
         }
     }
     buildTypes {
+        debug {
+            if (rootProject.file("signing.properties").exists()) signingConfig = signingConfigs.getByName("production")
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
@@ -49,6 +53,8 @@ android {
 }
 
 dependencies {
+    androidTestImplementation("androidx.test:runner:1.6.2")
+    androidTestImplementation("junit:junit:4.13.2")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)

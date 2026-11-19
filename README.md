@@ -19,6 +19,8 @@ Aplicativo Android nativo desenvolvido para apoiar o controle de estoque de uma 
 
 ## O que já está implementado
 
+A versão 1.1.0 acrescenta detalhes e edição de produtos, histórico de vendas, caixa, contas a pagar/receber com baixas parciais e encomendas. Vendas, estoque e recebíveis são integrados por transações SQLite. Consulte [`docs/GESTAO_LOJA.md`](docs/GESTAO_LOJA.md) para os fluxos e limites.
+
 - painel com totais e alertas de estoque baixo;
 - busca por produto, categoria, cor, tamanho ou SKU;
 - visualização de saldo por variação;

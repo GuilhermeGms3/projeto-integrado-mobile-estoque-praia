@@ -12,14 +12,15 @@ import java.util.UUID
 
 /** Estoque local persistente; cada gravação de saldo e histórico é atômica. */
 class LocalInventoryRepository(context: Context) : InventoryRepository {
-    private val database = object : SQLiteOpenHelper(context.applicationContext, "inventory.db", null, 1) {
+    internal val database = object : SQLiteOpenHelper(context.applicationContext, "inventory.db", null, 2) {
         override fun onCreate(db: SQLiteDatabase) {
             db.execSQL("CREATE TABLE products (id TEXT PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL, size TEXT NOT NULL, color TEXT NOT NULL, sku TEXT NOT NULL UNIQUE, quantity INTEGER NOT NULL CHECK(quantity >= 0), minimum INTEGER NOT NULL CHECK(minimum >= 0), price REAL NOT NULL CHECK(price > 0))")
             db.execSQL("CREATE TABLE movements (id TEXT PRIMARY KEY, variant TEXT NOT NULL REFERENCES products(id), label TEXT NOT NULL, type TEXT NOT NULL, quantity INTEGER NOT NULL CHECK(quantity > 0), occurred TEXT NOT NULL, note TEXT NOT NULL)")
+            createCommerceTables(db)
         }
         override fun onConfigure(db: SQLiteDatabase) { db.setForeignKeyConstraintsEnabled(true) }
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-            error("Migração de banco não definida para esta versão.")
+            if (oldVersion < 2) createCommerceTables(db)
         }
     }.writableDatabase
     private val productState = MutableStateFlow<List<ProductVariant>>(emptyList())
@@ -59,11 +60,11 @@ class LocalInventoryRepository(context: Context) : InventoryRepository {
     private fun insertMovement(id: String, label: String, type: MovementType, quantity: Int, note: String) {
         database.execSQL("INSERT INTO movements VALUES (?,?,?,?,?,?,?)", arrayOf(UUID.randomUUID().toString(), id, label, type.name, quantity, LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM HH:mm")), note))
     }
-    private fun transaction(block: () -> Unit) {
+    internal fun transaction(block: () -> Unit) {
         database.beginTransaction()
         try { block(); database.setTransactionSuccessful() } finally { database.endTransaction() }
     }
-    private fun refresh() {
+    internal fun refresh() {
         productState.value = database.rawQuery("SELECT * FROM products ORDER BY rowid DESC", null).use { c ->
             buildList { while(c.moveToNext()) add(ProductVariant(c.getString(0), c.getString(1), c.getString(2), c.getString(3), c.getString(4), c.getString(5), c.getInt(6), c.getInt(7), c.getDouble(8))) }
         }

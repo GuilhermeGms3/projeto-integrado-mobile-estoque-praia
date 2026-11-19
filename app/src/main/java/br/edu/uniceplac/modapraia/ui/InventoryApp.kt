@@ -88,6 +88,11 @@ fun InventoryApp() {
         )
         return
     }
+    StoreWorkspace(repository, viewModel, onLogout = { authenticated = false })
+}
+
+@Composable
+private fun LegacyInventory(viewModel: InventoryViewModel) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     var selectedProduct by remember { mutableStateOf<ProductVariant?>(null) }
@@ -231,7 +236,7 @@ private fun AppBar() {
 }
 
 @Composable
-private fun InventoryScreen(
+internal fun InventoryScreen(
     state: InventoryUiState,
     onSearch: (String) -> Unit,
     onProductClick: (ProductVariant) -> Unit,
